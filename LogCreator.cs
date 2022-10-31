@@ -21,11 +21,30 @@ namespace TelegramBot
             string wayToFolder = "E:\\LogTelegramBot\\TextLog\\";
             return wayToFolder + fileName;
         }
-        public string CreatorWayToPhoto(string fileId)
+        private async void CreatorFile(Message msg, ITelegramBotClient botClient, string fileId, string type)
         {
-            string fileName = $@"{fileId}_{DateTime.Now.ToString().Replace(":", ".")}.png";
-            string wayToFolder = @$"E:\LogTelegramBot\FileLibrary\Photo\";
-            return wayToFolder + fileName;
+            var fileInfo = await botClient.GetFileAsync(fileId);
+            var filePath = fileInfo.FilePath;
+            Dictionary<string, int> fileType = new Dictionary<string, int> { 
+                { "Audio", 0 },
+                { "Video", 1},
+                { "Photo", 2}
+            };
+            if (!fileType.ContainsKey(type))
+            {
+                Action("take same file from channel", "LogCreator", false);
+            }
+            string[] underTypeOfFile = new string[] 
+            { 
+                "mp3",
+                "mp4",
+                "png" 
+            };
+            string fileName = $@"{DateTime.Now.ToString().Replace(":", ".")}_{fileInfo.FileUniqueId}.{underTypeOfFile[fileType[type]]}";
+            string wayToFolder = @$"E:\LogTelegramBot\FileLibrary\{type}\";
+            await using FileStream fileStream = System.IO.File.OpenWrite(wayToFolder + fileName);
+            await botClient.DownloadFileAsync(filePath, fileStream);
+            fileStream.Close();
         }
 
         public void LogUser(Message msg)
@@ -72,28 +91,47 @@ namespace TelegramBot
         public async void Photo(Message msg, ITelegramBotClient botClient)
         {
             string fileWay = CreatorWayToLog();
-            Console.ForegroundColor = ConsoleColor.Green;
             string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):Photo";
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"[{msg.Date}]");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write($"(Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()})");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write($"{msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("Photo");
-            var fileId = msg.Photo.Last().FileId;
-            var fileInfo = await botClient.GetFileAsync(fileId);
-            var filePath = fileInfo.FilePath;
-            string wayToPhotoLibrary = CreatorWayToPhoto(fileId.ToString());
-            await using FileStream fileStream = System.IO.File.OpenWrite(wayToPhotoLibrary);
-            await botClient.DownloadFileAsync(filePath, fileStream);
-            fileStream.Close();
+            OutInConsole(msg);
+            string fileId = msg.Photo.Last().FileId;
+            CreatorFile(msg,botClient,fileId,"Photo");
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
+            streamWriter.WriteLine(contentLog);
+            streamWriter.Close();
+        }
+        public async void Video(Message msg, ITelegramBotClient botClient)
+        {
+            string fileWay = CreatorWayToLog();
+            string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):Video";
+            OutInConsole(msg);
+            var fileId = msg.Video.FileId;
+            CreatorFile(msg, botClient, fileId, "Video");
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
+            streamWriter.WriteLine(contentLog);
+            streamWriter.Close();
+        }
+        public async void Audio(Message msg, ITelegramBotClient botClient)
+        {
+            string fileWay = CreatorWayToLog();
+            string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):Audio";
+            OutInConsole(msg);
+            var fileId = msg.Audio.FileId;
+            CreatorFile(msg, botClient, fileId, "Audio");
             StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
             streamWriter.WriteLine(contentLog);
             streamWriter.Close();
         }
 
-
+        private void OutInConsole(Message msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(msg.Date);
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write($"(Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()})");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"{msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(msg.Text ?? "NullText");
+        }
     }
 }

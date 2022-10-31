@@ -256,6 +256,7 @@ namespace TelegramBot
                 }
                 userNumberOfChar.Close();
                 string answer = $"Имя : {name}\n" +
+                                $"Индификатор : {_msg.From.Id}\n" +
                                 $"Уровень : {level}\n" +
                                 $"Статус : {status}\n" +
                                 $"Префикс : {prefix}\n";
@@ -330,7 +331,11 @@ namespace TelegramBot
                             "!me - информация о пользователе\n" +
                             "!top - топ 10 пользователей сервера\n" +
                             "!change - изменить информацию о себе\n" +
-                            "!spam - отправить N-ное количество текста\n";
+                            "!spam - отправить N-ное количество текста\n" +
+                            "!pvp - выздвать пользователя на дуэль\n" +
+                            "!apvp - принять вызов на поединок\n" +
+                            "!attack - атаковать пользователя\n" +
+                            "!heal - вылечить себя";
             await _botClient.SendTextMessageAsync(_msg.Chat.Id, info);
             _log.Action("send list commands","CommandsBot",true);
         }

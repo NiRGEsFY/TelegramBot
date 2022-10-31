@@ -51,6 +51,14 @@ namespace TelegramBot
                 {
                     _log.Photo(msg, botClient);
                 }
+                else if (msg != null && msg.Video != null)
+                {
+                    _log.Video(msg, botClient);
+                }
+                else if (msg != null && msg.Audio != null)
+                {
+                    _log.Audio(msg, botClient);
+                }
                 else
                 {
                     return;

@@ -6,19 +6,31 @@ using System.Threading.Tasks;
 using System.IO;
 using Telegram.Bot.Types;
 using System.Web;
+using Telegram.BotAPI;
+using Telegram.BotAPI.AvailableMethods;
+using Telegram.Bot;
+using Microsoft.VisualBasic;
 
 namespace TelegramBot
 {
     internal class LogCreator
     {
-        public static string fileName = $"Log[{DateTime.Today.ToString().Replace(':','.')}].txt";
-
-        public static string wayToLibrary = "E:\\LogTelegramBot\\TextLog\\";
-        
-        public string wayToTextLog = wayToLibrary + fileName;
+        public string CreatorWayToLog()
+        {
+            string fileName = $"Log[{DateTime.Today.ToString().Replace(':', '.')}].txt";
+            string wayToFolder = "E:\\LogTelegramBot\\TextLog\\";
+            return wayToFolder + fileName;
+        }
+        public string CreatorWayToPhoto(string fileId)
+        {
+            string fileName = $@"{fileId}_{DateTime.Now.ToString().Replace(":", ".")}.png";
+            string wayToFolder = @$"E:\LogTelegramBot\FileLibrary\Photo\";
+            return wayToFolder + fileName;
+        }
 
         public void LogUser(Message msg)
         {
+            string fileWay = CreatorWayToLog();
             Console.ForegroundColor = ConsoleColor.Green;
             string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):{msg.Text}";
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -29,21 +41,23 @@ namespace TelegramBot
             Console.Write($"{msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(msg.Text);
-            StreamWriter streamWriter = new StreamWriter(wayToTextLog, true, Encoding.Default);
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
             streamWriter.WriteLine(contentLog);
             streamWriter.Close();
         }
         public void LogBot(Message msg, string msgBot)
         {
+            string fileWay = CreatorWayToLog();
             Console.ForegroundColor = ConsoleColor.Green;
             string contentLog = $"[{DateTime.Now}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()})Bot:\"{msgBot}\" to {msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id})";
             Console.WriteLine(contentLog);
-            StreamWriter streamWriter = new StreamWriter(wayToTextLog, true, Encoding.Default);
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
             streamWriter.WriteLine(contentLog);
             streamWriter.Close();
         }
         public void Action(string work, string worker, bool endWork)
         {
+            string fileWay = CreatorWayToLog();
             Console.ForegroundColor = ConsoleColor.Blue;
             if (endWork == false)
             {
@@ -51,9 +65,35 @@ namespace TelegramBot
             }
             string contentLog = $"[{DateTime.Now}]Bot:\"{worker}\"({work}) is {endWork}";
             Console.WriteLine(contentLog);
-            StreamWriter streamWriter = new StreamWriter(wayToTextLog, true, Encoding.Default);
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
             streamWriter.WriteLine(contentLog);
             streamWriter.Close();
         }
+        public async void Photo(Message msg, ITelegramBotClient botClient)
+        {
+            string fileWay = CreatorWayToLog();
+            Console.ForegroundColor = ConsoleColor.Green;
+            string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):Photo";
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"[{msg.Date}]");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write($"(Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()})");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"{msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Photo");
+            var fileId = msg.Photo.Last().FileId;
+            var fileInfo = await botClient.GetFileAsync(fileId);
+            var filePath = fileInfo.FilePath;
+            string wayToPhotoLibrary = CreatorWayToPhoto(fileId.ToString());
+            await using FileStream fileStream = System.IO.File.OpenWrite(wayToPhotoLibrary);
+            await botClient.DownloadFileAsync(filePath, fileStream);
+            fileStream.Close();
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
+            streamWriter.WriteLine(contentLog);
+            streamWriter.Close();
+        }
+
+
     }
 }

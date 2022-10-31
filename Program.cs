@@ -47,6 +47,10 @@ namespace TelegramBot
                         _dataBase.WorkWithLevel(msg);
                     }
                 }
+                else if (msg != null && msg.Photo != null)
+                {
+                    _log.Photo(msg, botClient);
+                }
                 else
                 {
                     return;

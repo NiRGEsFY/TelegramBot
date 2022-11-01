@@ -28,17 +28,19 @@ namespace TelegramBot
             Dictionary<string, int> fileType = new Dictionary<string, int> { 
                 { "Audio", 0 },
                 { "Video", 1},
-                { "Photo", 2}
+                { "Photo", 2},
+                { "Voice", 0}
             };
             if (!fileType.ContainsKey(type))
             {
                 Action("take same file from channel", "LogCreator", false);
+                return;
             }
             string[] underTypeOfFile = new string[] 
             { 
                 "mp3",
                 "mp4",
-                "png" 
+                "png"
             };
             string fileName = $@"{DateTime.Now.ToString().Replace(":", ".")}_{fileInfo.FileUniqueId}.{underTypeOfFile[fileType[type]]}";
             string wayToFolder = @$"E:\LogTelegramBot\FileLibrary\{type}\";
@@ -121,7 +123,17 @@ namespace TelegramBot
             streamWriter.WriteLine(contentLog);
             streamWriter.Close();
         }
-
+        public async void Voice(Message msg, ITelegramBotClient botClient)
+        {
+            string fileWay = CreatorWayToLog();
+            string contentLog = $"[{msg.Date}](Channel:{msg.Chat.Title ?? msg.Chat.Type.ToString()}){msg.From.FirstName ?? msg.From.Username ?? msg.From.LastName ?? "NullName"}({msg.From.Id}):Voice";
+            OutInConsole(msg);
+            var fileId = msg.Voice.FileId;
+            CreatorFile(msg, botClient, fileId, "Voice");
+            StreamWriter streamWriter = new StreamWriter(fileWay, true, Encoding.Default);
+            streamWriter.WriteLine(contentLog);
+            streamWriter.Close();
+        }
         private void OutInConsole(Message msg)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;

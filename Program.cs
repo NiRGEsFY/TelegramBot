@@ -59,6 +59,17 @@ namespace TelegramBot
                 {
                     _log.Audio(msg, botClient);
                 }
+                else if (msg != null && msg.Voice != null)
+                {
+                    _log.Voice(msg, botClient);
+                    string msgText = "";
+                    for (int i = 0; i < msg.Voice.Duration; i++)
+                    {
+                        msgText += Convert.ToString(i);
+                    }
+                    msg.Text = msgText;
+                    _dataBase.WorkWithLevel(msg);
+                }
                 else
                 {
                     return;

@@ -41,7 +41,7 @@ namespace TelegramBot
                 _botClient = botClient;
                 _comingFight = true;
                 _secondFighter = msg.EntityValues.SingleOrDefault().ToString();
-                AnswerBot(msg, $"Готов ли ты к анальной битве {_secondFighter}?\n" +
+                AnswerBot(msg, $"Готов ли ты к битве {_secondFighter}?\n" +
                                $"напиши '!apvp', если готов");
                 _firstFighterMsg = msg;
             }
@@ -165,7 +165,7 @@ namespace TelegramBot
             }
             else
             {
-                await _botClient.SendTextMessageAsync(msg.Chat.Id, "Ублюдок жди очередь");
+                await _botClient.SendTextMessageAsync(msg.Chat.Id, "Жди очередь");
             }
         }
         private async Task Win()

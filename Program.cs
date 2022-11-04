@@ -31,13 +31,15 @@ namespace TelegramBot
             _botClient = botClient;
             try
             {
-                if (msg != null && msg.Text != null)
+                if (msg != null && msg.Voice != null)
                 {
-                    if (msg.Text[0] == '!')
+                    _log.Voice(msg, botClient);
+                    string msgText = "";
+                    for (int i = 0; i < msg.Voice.Duration; i++)
                     {
-                        _commandsBot.ExecuterComand(msg, botClient, _dataBase);
+                        msgText += Convert.ToString(i * 1000);
                     }
-                    _log.LogUser(msg);
+                    msg.Text = msgText;
                     if (msg.Chat.Type.ToString() != "Private")
                     {
                         _dataBase.WorkWithGroupLevel(msg);
@@ -59,16 +61,21 @@ namespace TelegramBot
                 {
                     _log.Audio(msg, botClient);
                 }
-                else if (msg != null && msg.Voice != null)
+                else if (msg != null && msg.Text != null)
                 {
-                    _log.Voice(msg, botClient);
-                    string msgText = "";
-                    for (int i = 0; i < msg.Voice.Duration; i++)
+                    if (msg.Text[0] == '!')
                     {
-                        msgText += Convert.ToString(i);
+                        _commandsBot.ExecuterComand(msg, botClient, _dataBase);
                     }
-                    msg.Text = msgText;
-                    _dataBase.WorkWithLevel(msg);
+                    _log.LogUser(msg);
+                    if (msg.Chat.Type.ToString() != "Private")
+                    {
+                        _dataBase.WorkWithGroupLevel(msg);
+                    }
+                    else
+                    {
+                        _dataBase.WorkWithLevel(msg);
+                    }
                 }
                 else
                 {
